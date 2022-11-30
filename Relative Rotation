@@ -1,0 +1,5 @@
+P'(Imu) = R(Imu) * P(Imu)
+P'(Pro) = R(Pro) * P(Pro)
+R(m2p)P'(Imu)=R(pro)R(m2p)P(Imu)
+R(m2p)R(Imu)p(Imu) = R(pro)R(m2p)P(Imu)
+R(pro) = R(m2p)R(Imu)R(m2p).inv()
