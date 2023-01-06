@@ -1,0 +1,6 @@
+路径： /opencv-3.4.15/doc/pattern_tools
+$ python gen_pattern.py -o pro.svg --rows 13 --columns 26 --type checkerboard --square_size 50 --units px -w 1920 -h 1080
+
+
+【1】 https://github.com/opencv/opencv/blob/4.x/doc/pattern_tools/gen_pattern.py
+【2】https://docs.opencv.org/4.x/da/d0d/tutorial_camera_calibration_pattern.html
