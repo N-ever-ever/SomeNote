@@ -1,0 +1,5 @@
+void getRotationMatrix(const Eigen::Vector3d &vectorBefore, const Eigen::Vector3d &vectorAfter, Eigen::Matrix3d &rotMatrix)
+{
+    Eigen::Quaterniond quat_rot = Eigen::Quaterniond::FromTwoVectors(vectorBefore, vectorAfter);
+    rotMatrix = quat_rot.toRotationMatrix();
+}
