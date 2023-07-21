@@ -1,0 +1,74 @@
+// fun1.h
+#include <iostream>
+
+class fun1
+{
+public:
+    fun1();
+    ~fun1();
+    void doFun1();
+};
+
+// fun1.cpp
+#include "fun1.h"
+#include <iostream>
+using namespace std;
+fun1::fun1() { }
+fun1::~fun1() { }
+void fun1::doFun1()
+{
+    cout << "fun1 done." << endl;
+}
+
+$ g++ -c fun1.cpp          // 生成fun1.o
+
+// fun2.h
+#include <iostream>
+class fun2
+{
+public:
+    fun2();
+    ~fun2();
+    void doFun2();
+};
+// fun2.cpp
+#include "fun2.h"
+#include <iostream>
+using namespace std;
+fun2::fun2() { }
+fun2::~fun2() { }
+void fun2::doFun2()
+{
+    cout << "fun2 done." << endl;
+}
+
+$ g++ -c fun2.cpp          // 生成fun2.o
+
+$ ar rcs libfun1.a fun1.o
+$ ar rcs libfun2.a fun2.o
+
+
+$ mkdir new_project
+$ cp fun1.h fun2.h libfun1.a libfun2.a ./new_project
+// process.h
+void doProcess();
+int main()
+{
+    doProcess();
+    return 0;
+}
+// process.cpp
+#include "process.h"
+#include "fun2.h"
+#include "fun1.h"
+#include <iostream>
+using namespace std;
+void doProcess()
+{
+    fun1* p_fun1 = new fun1();
+    fun2* p_fun2 = new fun2();
+    p_fun1->doFun1();
+    p_fun2->doFun2();
+}
+$ g++ process.cpp -o main -L. -lfun1 -lfun2
+$ ./main     //执行
