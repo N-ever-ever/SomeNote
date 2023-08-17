@@ -44,7 +44,7 @@ void fun2::doFun2()
 
 $ g++ -c fun2.cpp          // 生成fun2.o
 
-$ ar rcs libfun1.a fun1.o
+$ ar rcs libfun1.a fun1.o  //生成libfun1.a
 $ ar rcs libfun2.a fun2.o
 
 
