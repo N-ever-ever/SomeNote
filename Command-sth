@@ -1,0 +1,1 @@
+logcat | grep --line-buffered -ie tag_name | tee /sdcard/log1.txt
