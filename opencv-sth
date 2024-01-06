@@ -1,0 +1,2 @@
+CV_32FC1 --> float
+CV_16UC1 --> ushort
