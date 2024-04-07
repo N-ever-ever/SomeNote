@@ -1,0 +1,27 @@
+Code-snip
+// 提取函数公共实现
+
+// Common_test.h
+
+#include <iostream>
+#include <vector>
+using namespace std;
+namespace Common_test{
+  // 定义一个函数指针类型
+  typedef int (*ProcessFunction)(int);
+  // 定义一个使用函数指针的函数
+  void ProcessData(int val, ProcessFunction processFunction)
+  {
+      int res = processFunction(val);
+  }
+}
+//main.cpp
+int main()
+{
+  int val = 1;
+  auto ProcessFun1 = [](val)->int { return 1*val; };
+  auto ProcessFun2 = [](val)->int { return 2*val; };
+  Common_test::ProcessData(val,ProcessFun1);
+  Common_test::ProcessData(val,ProcessFun2);
+  return 0;
+}
