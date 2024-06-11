@@ -1,0 +1,48 @@
+// code by gpt-4o    基于eigen， 使用svd分解， 选取前3大的特征值，求解线性方程。 给出示例代码
+#include <Eigen/Dense>
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int main() {
+    // 定义矩阵 A 和向量 b
+    Eigen::MatrixXd A(5, 3);
+    A << 1, 2, 3,
+         4, 5, 6,
+         7, 8, 9,
+         10, 11, 12,
+         13, 14, 15;
+    
+    Eigen::VectorXd b(5);
+    b << 1, 2, 3, 4, 5;
+
+    // 进行 SVD 分解
+    Eigen::JacobiSVD<Eigen::MatrixXd> svd(A, Eigen::ComputeThinU | Eigen::ComputeThinV);
+
+    // 获取奇异值
+    Eigen::VectorXd singularValues = svd.singularValues();
+
+    // 获取 U 和 V 矩阵
+    Eigen::MatrixXd U = svd.matrixU();
+    Eigen::MatrixXd V = svd.matrixV();
+
+    // 创建对角矩阵 S，只包含前3大的奇异值
+    Eigen::VectorXd sigma = singularValues.head(3);
+    Eigen::MatrixXd S = sigma.asDiagonal();
+
+    // 构建矩阵 U3 和 V3，仅包含前3大的特征向量
+    Eigen::MatrixXd U3 = U.leftCols(3);
+    Eigen::MatrixXd V3 = V.leftCols(3);
+
+    // 计算伪逆
+    Eigen::MatrixXd S_inv = S.inverse();
+    Eigen::MatrixXd A_pseudo_inverse = V3 * S_inv * U3.transpose();
+
+    // 求解线性方程 Ax = b
+    Eigen::VectorXd x = A_pseudo_inverse * b;
+
+    // 输出结果
+    std::cout << "解 x 为：\n" << x << std::endl;
+
+    return 0;
+}
