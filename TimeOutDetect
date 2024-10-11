@@ -1,0 +1,173 @@
+Method 1.// C++11 提供了 <thread> 和 <future> 标准库工具
+// 使用CMakeList如何链接pthread
+find_package(Threads REQUIRED)
+target_link_libraries(my_program Threads::Threads)
+// g++ -std=c++11 your_program.cpp -o your_program -lpthread
+
+Method 2.// 使用pthread实现
+
+// Method 1
+
+#include <opencv2/opencv.hpp>
+#include <thread>
+#include <future>
+#include <iostream>
+#include <chrono>
+
+bool findChessboardCornersAsync(const cv::Mat &image, cv::Size patternSize, 
+                                std::vector<cv::Point2f> &corners, int timeoutMs) {
+    // 定义一个异步任务来执行 findChessboardCorners
+    std::packaged_task<bool()> task([&]() {
+        return cv::findChessboardCorners(image, patternSize, corners, 
+                                         cv::CALIB_CB_ADAPTIVE_THRESH + 
+                                         cv::CALIB_CB_NORMALIZE_IMAGE);
+    });
+    
+    // 获取任务的 future 对象，用于异步监控
+    std::future<bool> result = task.get_future();
+    
+    // 在一个独立线程中执行任务
+    std::thread t(std::move(task));
+    
+    // 使用 wait_for 来监控执行时间
+    if (result.wait_for(std::chrono::milliseconds(timeoutMs)) == std::future_status::timeout) {
+        std::cout << "Timeout exceeded: " << timeoutMs << " milliseconds\n";
+        t.detach(); // 如果超时，分离线程，避免阻塞主线程
+        return false; // 返回超时失败
+    }
+
+    // 等待线程执行完成并获取结果
+    bool found = result.get();
+    
+    // 确保线程完成
+    t.join();
+    
+    return found;
+}
+
+int main() {
+    // 读取图像
+    cv::Mat image = cv::imread("chessboard.jpg");
+    if (image.empty()) {
+        std::cerr << "Failed to load image\n";
+        return -1;
+    }
+
+    cv::Size patternSize(7, 7);  // 棋盘格的内角点数
+    std::vector<cv::Point2f> corners;
+
+    // 设置超时时间为1000毫秒
+    int timeoutMs = 1000;
+
+    // 调用异步的 findChessboardCorners
+    bool result = findChessboardCornersAsync(image, patternSize, corners, timeoutMs);
+
+    if (result) {
+        std::cout << "Chessboard corners found\n";
+        cv::drawChessboardCorners(image, patternSize, corners, result);
+        cv::imshow("Detected Corners", image);
+        cv::waitKey(0);
+    } else {
+        std::cout << "Chessboard corners not found or timeout exceeded\n";
+    }
+
+    return 0;
+}
+
+// Method 2
+
+#include <opencv2/opencv.hpp>
+#include <pthread.h>
+#include <iostream>
+#include <chrono>
+#include <atomic>
+
+// 线程结果的结构体
+struct ThreadData {
+    const cv::Mat *image;
+    cv::Size patternSize;
+    std::vector<cv::Point2f> *corners;
+    std::atomic<bool> *found; // 使用指针指向 std::atomic<bool>，避免复制
+};
+
+// 线程函数，执行 findChessboardCorners
+void* findCornersThread(void* arg) {
+    ThreadData *data = static_cast<ThreadData*>(arg);
+
+    // 执行棋盘角点检测
+    *data->found = cv::findChessboardCorners(*(data->image), data->patternSize, *(data->corners),
+                                             cv::CALIB_CB_ADAPTIVE_THRESH + 
+                                             cv::CALIB_CB_NORMALIZE_IMAGE);
+    return nullptr;
+}
+
+// 使用 pthread 实现的 findChessboardCornersAsync
+bool findChessboardCornersAsync(const cv::Mat &image, cv::Size patternSize, 
+                                std::vector<cv::Point2f> &corners, int timeoutMs) {
+    pthread_t thread;
+    std::atomic<bool> found(false); // 使用原子变量来存储结果
+    ThreadData data{&image, patternSize, &corners, &found}; // 传递指针给 found
+
+    // 创建线程来执行 findChessboardCorners
+    if (pthread_create(&thread, nullptr, findCornersThread, &data) != 0) {
+        std::cerr << "Failed to create thread\n";
+        return false;
+    }
+
+    // 等待指定的超时时间
+    auto start = std::chrono::high_resolution_clock::now();
+    bool timed_out = false;
+
+    // 主线程监控时间，轮询线程状态
+    while (true) {
+        // 计算当前耗时
+        auto now = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> elapsed = now - start;
+
+        if (elapsed.count() > timeoutMs) {
+            std::cout << "Timeout exceeded: " << timeoutMs << " milliseconds\n";
+            timed_out = true;
+            break;
+        }
+
+        // 如果线程执行完成
+        if (found) {
+            break;
+        }
+    }
+
+    // 线程完成或超时，确保线程被正确清理
+    pthread_cancel(thread);
+    pthread_join(thread, nullptr);
+
+    return !timed_out && found;
+}
+
+int main() {
+    // 读取图像
+    cv::Mat image = cv::imread("chessboard.jpg");
+    if (image.empty()) {
+        std::cerr << "Failed to load image\n";
+        return -1;
+    }
+
+    cv::Size patternSize(7, 7);  // 棋盘格的内角点数
+    std::vector<cv::Point2f> corners;
+
+    // 设置超时时间为1000毫秒
+    int timeoutMs = 1000;
+
+    // 调用 pthread 实现的 findChessboardCornersAsync
+    bool result = findChessboardCornersAsync(image, patternSize, corners, timeoutMs);
+
+    if (result) {
+        std::cout << "Chessboard corners found\n";
+        cv::drawChessboardCorners(image, patternSize, corners, result);
+        cv::imshow("Detected Corners", image);
+        cv::waitKey(0);
+    } else {
+        std::cout << "Chessboard corners not found or timeout exceeded\n";
+    }
+
+    return 0;
+}
