@@ -1,0 +1,21 @@
+cv::Mat RT; 
+cv::hconcat(R,T,RT);
+cv::Mat P2 = K2*RT;
+cv::Mat P1 = K1*cv::Mat::eye(3,4,CV_64F);
+cv::Point3f triangulatePoint(const cv::Point2f& point1, const cv::Point2f& point2, const cv::Mat& P1, const cv::Mat& P2)
+{
+    cv::Mat A(4, 4, CV_32FC1);
+
+    cv::Mat(point1.x * P1.row(2) - P1.row(0)).copyTo(A.row(0));
+    cv::Mat(point1.y * P1.row(2) - P1.row(1)).copyTo(A.row(1));
+    cv::Mat(point2.x * P2.row(2) - P2.row(0)).copyTo(A.row(2));
+    cv::Mat(point2.y * P2.row(2) - P2.row(1)).copyTo(A.row(3));
+
+    cv::Mat W, U, Vt;
+    cv::SVD::compute(A, W, U, Vt);
+
+    cv::Mat homogenousOutput = Vt.row(3);
+    homogenousOutput /= homogenousOutput.ptr<float>(0)[3];
+
+    return cv::Point3f(homogenousOutput.colRange(0, 3));
+}
