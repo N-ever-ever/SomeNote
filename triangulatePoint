@@ -19,3 +19,16 @@ cv::Point3f triangulatePoint(const cv::Point2f& point1, const cv::Point2f& point
 
     return cv::Point3f(homogenousOutput.colRange(0, 3));
 }
+
+
+重建精度评估
+理论精度评估：
+  1. 硬件因素 （分辨率，焦距）
+  2. 系统因素 （基线长度，工作距离）
+  3. 算法因素 (标定精度, 相位提取精度)
+  4. 环境因素 （ 光照条件，噪声水平，拍摄物体颜色、反射率，拍摄角度， 温度）
+         δZ = (Z² / (B * fx)) * (δd)
+
+当前demo方案下重建精度评估：
+1m距离，基线10cm，fx=850，视差像素误差0.2个pixel
+δZ = (1000*1000) / (100*850) * 0.2 = 0.4mm
