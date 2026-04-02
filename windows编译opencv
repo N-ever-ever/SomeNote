@@ -7,6 +7,17 @@ mingw32-make.exe -j8
 # 安装到指定目录
 mingw32-make.exe install
 
+将 OpenCV 的 bin 目录加入系统环境变量 PATH
+如果你不想复制文件，可以让系统全局找到这些 DLL。
+找到 OpenCV 的 bin 目录路径（包含 .dll 文件的文件夹）。
+Windows 10/11 设置步骤：
+右键“此电脑” -> “属性” -> “高级系统设置”。
+点击“环境变量”。
+在“系统变量”中找到 Path，点击“编辑”。
+点击“新建”，添加 OpenCV 的 bin 目录路径（例如 D:\opencv\build\x64\mingw\bin）。
+点击确定保存。
+重要：修改环境变量后，必须重启命令行窗口或 IDE 才能生效。
+
 
 // 代码链接指定版本opencv, 使用CMakeLists.txt
 set(Opencv_DIR "./path/build")   // OpenCVConfig.cmake 的路径
