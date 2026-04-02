@@ -1,0 +1,28 @@
+#编译opencv
+cmake-gui 中为了加速可以关闭 dnn，java，js，cuda，tests，python，ffmpeg
+
+# 配置完成后编译（使用多核加速）
+mingw32-make.exe -j8
+
+# 安装到指定目录
+mingw32-make.exe install
+
+
+// 代码链接指定版本opencv, 使用CMakeLists.txt
+set(Opencv_DIR "./path/build")   // OpenCVConfig.cmake 的路径
+find_package(OpenCV REQUIRED)
+message(STATUS "=================================")
+message(STATUS "OpenCV Version: ${OpenCV_VERSION}")
+message(STATUS "OpenCV Dir: ${OpenCV_DIR}")
+message(STATUS "OpenCV Libs: ${OpenCV_LIBS}") # 关键：看这里有没有 dnn
+message(STATUS "=================================")
+
+
+
+// ❌ 不要这样写（这会隐式依赖所有模块，包括 dnn）
+// #include <opencv2/opencv.hpp> 
+
+// ✅ 这样写（只依赖核心和图像处理模块）
+#include <opencv2/core.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/imgcodecs.hpp> // 如果需要 imread/imwrite
