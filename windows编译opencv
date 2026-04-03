@@ -37,3 +37,21 @@ message(STATUS "=================================")
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp> // 如果需要 imread/imwrite
+
+
+
+提供给他人的libxxx.a, 附带所需依赖
+ldd example.exe
+MyLib_Package/
+├── lib/
+│   ├── libxxx.a                    # 你的库
+│   ├── libopencv_core3418dll.a     # ⚠️ 缺少这个！
+│   ├── libopencv_imgproc3418dll.a  # ⚠️ 缺少这个！
+│   └── libopencv_imgcodecs3418dll.a# ⚠️ 缺少这个！
+├── bin/
+│   ├── opencv_core3418.dll
+│   ├── opencv_imgproc3418.dll
+│   └── opencv_imgcodecs3418.dll
+├── include/
+│   └── xxx.h
+└── README.md
